@@ -1,3 +1,5 @@
+import { unwrapStoredValue } from "./unwrap-stored-value";
+
 export const ESV_API_URL = "https://api.esv.org/v3/passage/text/";
 export const ESV_SITE_URL = "https://www.esv.org/";
 export const MAX_ESV_VERSES = 500;
@@ -30,17 +32,10 @@ export type EsvFetchOptions = {
 };
 
 export function esvApiKey() {
-  let value = process.env.ESV_API_KEY?.trim() ?? "";
+  const value = unwrapStoredValue(process.env.ESV_API_KEY);
   if (!value) return undefined;
-
-  if (value.startsWith("b64:")) {
-    value = Buffer.from(value.slice(4), "base64").toString("utf8").trim();
-  } else if (value.startsWith("sep:")) {
-    value = value.slice(4).replaceAll(",", "").trim();
-  }
-
-  value = value.replace(/^authorization:\s*/i, "").replace(/^token\s+/i, "").trim();
-  return value || undefined;
+  const token = value.replace(/^authorization:\s*/i, "").replace(/^token\s+/i, "").trim();
+  return token || undefined;
 }
 
 export function halfBookLimit(bookId: number) {
