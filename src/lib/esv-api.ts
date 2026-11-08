@@ -30,8 +30,17 @@ export type EsvFetchOptions = {
 };
 
 export function esvApiKey() {
-  const key = process.env.ESV_API_KEY?.trim();
-  return key || undefined;
+  let value = process.env.ESV_API_KEY?.trim() ?? "";
+  if (!value) return undefined;
+
+  if (value.startsWith("b64:")) {
+    value = Buffer.from(value.slice(4), "base64").toString("utf8").trim();
+  } else if (value.startsWith("sep:")) {
+    value = value.slice(4).replaceAll(",", "").trim();
+  }
+
+  value = value.replace(/^authorization:\s*/i, "").replace(/^token\s+/i, "").trim();
+  return value || undefined;
 }
 
 export function halfBookLimit(bookId: number) {

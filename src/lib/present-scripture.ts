@@ -1,3 +1,4 @@
+import { io } from "next/cache";
 import type { PrayerSummary } from "@/db/queries";
 import { seedPrayers } from "@/db/seed-data";
 import { admitPassage, esvApiKey, normalizeReference } from "@/lib/esv-api";
@@ -23,6 +24,7 @@ const UNAVAILABLE = "The ESV text could not be loaded.";
 const PAGE_LIMIT = "This passage is not shown here so the page stays within the ESV quotation limit.";
 
 export async function presentScripture(items: ScriptureInput[]): Promise<ScriptureView[]> {
+  await io();
   if (!esvApiKey()) return applyEsvViews(items, new Map(), false);
 
   const references = items.flatMap((item) =>

@@ -5,6 +5,7 @@ import {
   BOOK_VERSE_COUNTS,
   ESV_API_URL,
   ESV_COPYRIGHT_NOTICE,
+  esvApiKey,
   fetchEsvPassage,
   halfBookLimit,
   MAX_ESV_VERSES,
@@ -122,6 +123,46 @@ test("storage and page limits stay within 500 verses and half a book", () => {
   const withoutKey = applyEsvViews(items, resolved, false);
   assert.equal(withoutKey[0]?.text, "Stored public-domain fallback.");
   assert.equal(withoutKey[0]?.fromEsv, false);
+});
+
+test("ESV_API_KEY is reduced to the token", () => {
+  const previousKey = process.env.ESV_API_KEY;
+  const token = "dummy-token";
+
+  try {
+    process.env.ESV_API_KEY = token;
+    assert.equal(esvApiKey(), token);
+
+    process.env.ESV_API_KEY = `b64:${Buffer.from(token, "utf8").toString("base64")}`;
+    assert.equal(esvApiKey(), token);
+
+    process.env.ESV_API_KEY = "sep:a,b,c";
+    assert.equal(esvApiKey(), "abc");
+
+    process.env.ESV_API_KEY = `Authorization: Token ${token}`;
+    assert.equal(esvApiKey(), token);
+
+    process.env.ESV_API_KEY = `authorization: token ${token}`;
+    assert.equal(esvApiKey(), token);
+
+    process.env.ESV_API_KEY = `Token ${token}`;
+    assert.equal(esvApiKey(), token);
+
+    process.env.ESV_API_KEY = `b64:${Buffer.from(`Authorization: Token ${token}`, "utf8").toString("base64")}`;
+    assert.equal(esvApiKey(), token);
+
+    delete process.env.ESV_API_KEY;
+    assert.equal(esvApiKey(), undefined);
+
+    process.env.ESV_API_KEY = "   ";
+    assert.equal(esvApiKey(), undefined);
+
+    process.env.ESV_API_KEY = "";
+    assert.equal(esvApiKey(), undefined);
+  } finally {
+    if (previousKey === undefined) delete process.env.ESV_API_KEY;
+    else process.env.ESV_API_KEY = previousKey;
+  }
 });
 
 test("the Crossway copyright notice is the required form", () => {
