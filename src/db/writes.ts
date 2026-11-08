@@ -29,6 +29,7 @@ type VerseInput = {
   translation: string;
   topicIds: number[];
   newTopicName: string;
+  vestaboardText?: string;
 };
 
 export async function createPrayer(input: PrayerInput): Promise<WriteResult> {
@@ -85,6 +86,7 @@ export async function createVerse(input: VerseInput): Promise<WriteResult> {
   let text = cleanText(input.text, 8000);
   let translation = normalizeTranslation(input.translation || "WEB");
   const newTopicName = cleanLine(input.newTopicName, 80);
+  const vestaboardText = cleanText(input.vestaboardText ?? "", 1000) || null;
 
   if (!reference) {
     return {
@@ -127,6 +129,7 @@ export async function createVerse(input: VerseInput): Promise<WriteResult> {
           reference,
           text,
           translation,
+          vestaboardText,
           createdAt: new Date(),
         })
         .returning({ id: verses.id });

@@ -1,5 +1,5 @@
 import type { Client } from "@libsql/client";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import {
   applyConnectionPragmas,
   closeDatabase,
@@ -7,9 +7,9 @@ import {
   resolveDatabaseConfig,
   type Database,
 } from "./client";
-import { esvCacheSql, migrationSql } from "./migration-sql";
+import { esvCacheSql, migrationSql, vestaboardTextSql } from "./migration-sql";
 import { prayerTopics, prayers, topics, verseTopics, verses } from "./schema";
-import { seedPrayers, seedTopics, seedVerses } from "./seed-data";
+import { seedPrayers, seedTopics, seedVerses, seedVestaboardText } from "./seed-data";
 
 let ready: Promise<void> | null = null;
 
@@ -51,6 +51,7 @@ async function applyMigrations(client: Client) {
   const migrations = [
     { id: "0000_init", sql: migrationSql },
     { id: "0001_esv_cache", sql: esvCacheSql },
+    { id: "0002_vestaboard_text", sql: vestaboardTextSql },
   ];
 
   for (const migration of migrations) {
@@ -126,6 +127,19 @@ async function seed(database: Database) {
   });
   if (verseLinks.length > 0) {
     await database.insert(verseTopics).values(verseLinks).onConflictDoNothing();
+  }
+
+  for (const [reference, vestaboardText] of Object.entries(seedVestaboardText)) {
+    await database
+      .update(verses)
+      .set({ vestaboardText })
+      .where(
+        and(
+          eq(verses.reference, reference),
+          eq(verses.translation, "WEB"),
+          isNull(verses.vestaboardText),
+        ),
+      );
   }
 
   for (const prayer of seedPrayers) {

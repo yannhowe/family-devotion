@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test --test-concurrency=1 src/lib/esv.test.ts src/lib/password.test.ts src/db/client.test.ts src/db/seed.test.ts"
+    "test": "tsx --test --test-concurrency=1 src/lib/esv.test.ts src/lib/password.test.ts src/lib/vestaboard.test.ts src/db/client.test.ts src/db/vestaboard.test.ts src/db/seed.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
