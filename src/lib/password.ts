@@ -1,18 +1,10 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { unwrapStoredValue } from "./unwrap-stored-value";
 
 const SESSION_MESSAGE = "family-devotion-admin-v1";
 
 export function getAdminPassword() {
-  let password = process.env.ADMIN_PASSWORD?.trim() ?? "";
-  if (!password) return undefined;
-
-  if (password.startsWith("b64:")) {
-    password = Buffer.from(password.slice(4), "base64").toString("utf8").trim();
-  } else if (password.startsWith("sep:")) {
-    password = password.slice(4).replaceAll(",", "").trim();
-  }
-
-  return password || undefined;
+  return unwrapStoredValue(process.env.ADMIN_PASSWORD);
 }
 
 export function passwordsMatch(input: string, password: string) {

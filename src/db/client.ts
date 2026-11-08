@@ -2,6 +2,7 @@ import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
+import { unwrapStoredValue } from "@/lib/unwrap-stored-value";
 import { DatabaseConfigError } from "./errors";
 import { schema } from "./schema";
 
@@ -20,7 +21,7 @@ export function resolveDatabaseConfig(): DatabaseConfig {
   const configured = [process.env.DATABASE_URL, process.env.TURSO_DATABASE_URL]
     .map((value) => value?.trim())
     .find((value) => Boolean(value));
-  const authToken = process.env.TURSO_AUTH_TOKEN?.trim() || undefined;
+  const authToken = unwrapStoredValue(process.env.TURSO_AUTH_TOKEN);
 
   if (!configured) {
     if (process.env.VERCEL) {
