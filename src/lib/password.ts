@@ -3,8 +3,16 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 const SESSION_MESSAGE = "family-devotion-admin-v1";
 
 export function getAdminPassword() {
-  const password = process.env.ADMIN_PASSWORD?.trim();
-  return password ? password : undefined;
+  let password = process.env.ADMIN_PASSWORD?.trim() ?? "";
+  if (!password) return undefined;
+
+  if (password.startsWith("b64:")) {
+    password = Buffer.from(password.slice(4), "base64").toString("utf8").trim();
+  } else if (password.startsWith("sep:")) {
+    password = password.slice(4).replaceAll(",", "").trim();
+  }
+
+  return password || undefined;
 }
 
 export function passwordsMatch(input: string, password: string) {
