@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: file:/app/data/devotion.db
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      VESTABOARD_READ_WRITE_KEY: ${VESTABOARD_READ_WRITE_KEY:-}
+    volumes:
+      - devotion-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  devotion-data:
