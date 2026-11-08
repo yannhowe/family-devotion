@@ -2,7 +2,7 @@
 
 A simple website for families who want to pray according to God’s will. It is a small library of prayers, including the prayers of the Apostle Paul, and Bible verses gathered by topic.
 
-The sample Scripture is from the World English Bible, which is in the public domain.
+The sample Scripture stored with the app is from the World English Bible, which is in the public domain. If you add an ESV API key, the site shows the English Standard Version for those same passages instead.
 
 Each deployment gets its own database. The sample prayers and verses are a shared starting point, not one family’s private notes. The first time the site opens, it creates the tables and adds those samples.
 
@@ -29,9 +29,10 @@ You do not need to set anything for a normal Vercel deploy. The button’s Turso
 | `TURSO_AUTH_TOKEN` | Set by the Turso integration. The token that lets the site open that database. |
 | `DATABASE_URL` | Optional. Use this instead of `TURSO_DATABASE_URL` if you already have a libSQL URL, for example `libsql://your-database.turso.io`. If both are set, `DATABASE_URL` is the one that is used. |
 | `ADMIN_PASSWORD` | Optional. If you set it, the page **Care for this library** (`/admin`) can add a prayer or a verse. If you leave it empty, the site is read-only. This is one shared password, not user accounts. |
+| `ESV_API_KEY` | Optional. A token from [api.esv.org](https://api.esv.org/). When it is set, Scripture on the site is loaded from the English Standard Version. When it is empty, the site keeps the World English Bible samples. Crossway’s free API is for non-commercial personal, church, and ministry use. |
 | `VESTABOARD_READ_WRITE_KEY` | Optional and unused. Kept for a possible later connection to a Vestaboard. |
 
-To allow additions after deploy, add `ADMIN_PASSWORD` in the Vercel project’s environment variables and redeploy.
+To allow additions after deploy, add `ADMIN_PASSWORD` in the Vercel project’s environment variables and redeploy. To show the ESV, add `ESV_API_KEY` the same way. The site caches those passages on your database, stays within Crossway’s limit of 500 verses and half of any book, and refreshes the cache about every two weeks. If the ESV cannot be loaded, the page shows the World English Bible instead.
 
 ## Docker Compose
 

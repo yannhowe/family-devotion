@@ -5,6 +5,7 @@ import { DatabaseMessage } from "@/components/database-message";
 import { LibraryFallback } from "@/components/library-fallback";
 import { VerseBlock } from "@/components/verse-block";
 import { getTopicBySlug, listVersesForTopic } from "@/db/queries";
+import { presentVerses } from "@/lib/present-scripture";
 import { settle } from "@/lib/settle";
 
 export const metadata = {
@@ -33,7 +34,8 @@ async function TopicDetail({ params }: { params: Promise<{ slug: string }> }) {
   });
   if (!loaded.ok) return <DatabaseMessage error={loaded.error} />;
   if (!loaded.data) notFound();
-  const { topic, verses } = loaded.data;
+  const { topic } = loaded.data;
+  const verses = await presentVerses(loaded.data.verses);
 
   return (
     <div className="flex flex-col gap-6">
@@ -56,7 +58,7 @@ async function TopicDetail({ params }: { params: Promise<{ slug: string }> }) {
       ) : (
         <div className="divide-y divide-border">
           {verses.map((verse) => (
-            <VerseBlock key={verse.id} {...verse} />
+            <VerseBlock key={verse.id} {...verse} notice={verse.notice} />
           ))}
         </div>
       )}

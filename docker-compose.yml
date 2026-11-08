@@ -6,6 +6,7 @@ services:
     environment:
       DATABASE_URL: file:/app/data/devotion.db
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ESV_API_KEY: ${ESV_API_KEY:-}
       VESTABOARD_READ_WRITE_KEY: ${VESTABOARD_READ_WRITE_KEY:-}
     volumes:
       - devotion-data:/app/data

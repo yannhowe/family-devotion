@@ -12,11 +12,17 @@ type TopicOption = {
   name: string;
 };
 
-export function AdminForms({ topics }: { topics: TopicOption[] }) {
+export function AdminForms({
+  topics,
+  esvEnabled = false,
+}: {
+  topics: TopicOption[];
+  esvEnabled?: boolean;
+}) {
   return (
     <div className="flex flex-col gap-12">
       <PrayerForm topics={topics} />
-      <VerseForm topics={topics} />
+      <VerseForm topics={topics} esvEnabled={esvEnabled} />
     </div>
   );
 }
@@ -53,7 +59,13 @@ function PrayerForm({ topics }: { topics: TopicOption[] }) {
   );
 }
 
-function VerseForm({ topics }: { topics: TopicOption[] }) {
+function VerseForm({
+  topics,
+  esvEnabled,
+}: {
+  topics: TopicOption[];
+  esvEnabled: boolean;
+}) {
   const [state, action, pending] = useActionState(addVerse, { error: "" });
 
   return (
@@ -61,11 +73,13 @@ function VerseForm({ topics }: { topics: TopicOption[] }) {
       <div>
         <h2 className="text-2xl">Add a verse</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Shortlist a passage under a topic. The sample verses use the World English Bible.
+          {esvEnabled
+            ? "Leave the text blank to load the English Standard Version from this reference. If that cannot be loaded, paste a public-domain translation such as the World English Bible and name it."
+            : "Shortlist a passage under a topic. If you paste Scripture, use a public-domain translation such as the World English Bible (WEB) or the King James Version (KJV)."}
         </p>
       </div>
       <Field id="verse-reference" label="Reference" name="reference" required placeholder="John 3:16" />
-      <TextField id="verse-text" label="Text" name="text" required />
+      <TextField id="verse-text" label="Text" name="text" required={!esvEnabled} />
       <Field id="verse-translation" label="Translation" name="translation" required defaultValue="WEB" />
       <TopicFields idPrefix="verse" topics={topics} />
       {state.error ? <p role="alert" className="text-sm text-destructive">{state.error}</p> : null}

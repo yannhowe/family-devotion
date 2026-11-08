@@ -5,6 +5,7 @@ import { LibraryFallback } from "@/components/library-fallback";
 import { PrayerList } from "@/components/prayer-list";
 import { listAuthors, listPrayers } from "@/db/queries";
 import { firstParam } from "@/lib/params";
+import { presentPrayers } from "@/lib/present-scripture";
 import { settle } from "@/lib/settle";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,8 @@ async function PrayerIndex({
   const paul = author?.toLowerCase() === "paul";
   const loaded = await settle(() => Promise.all([listPrayers(author), listAuthors()]));
   if (!loaded.ok) return <DatabaseMessage error={loaded.error} />;
-  const [prayers, authors] = loaded.data;
+  const [prayerRows, authors] = loaded.data;
+  const prayers = await presentPrayers(prayerRows);
 
   return (
       <div className="flex flex-col gap-6">

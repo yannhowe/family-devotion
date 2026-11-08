@@ -1,11 +1,13 @@
 import Link from "next/link";
+import { TranslationLabel } from "@/components/translation-label";
 import type { PrayerSummary } from "@/db/queries";
-import { excerpt, translationName } from "@/lib/format";
-import { seedPrayers, TRANSLATION } from "@/db/seed-data";
+import { excerpt } from "@/lib/format";
 
-const seededReferences = new Set(seedPrayers.map((prayer) => prayer.scriptureReference));
-
-export function PrayerList({ prayers }: { prayers: PrayerSummary[] }) {
+export function PrayerList({
+  prayers,
+}: {
+  prayers: Array<PrayerSummary & { translation?: string | null }>;
+}) {
   if (prayers.length === 0) {
     return <p className="text-muted-foreground">No prayers have been added yet.</p>;
   }
@@ -26,9 +28,12 @@ export function PrayerList({ prayers }: { prayers: PrayerSummary[] }) {
           {prayer.scriptureReference ? (
             <p className="mt-1 text-sm text-muted-foreground">
               {prayer.scriptureReference}
-              {prayer.scriptureReference && seededReferences.has(prayer.scriptureReference)
-                ? ` · ${translationName(TRANSLATION)}`
-                : null}
+              {prayer.translation ? (
+                <>
+                  {" · "}
+                  <TranslationLabel translation={prayer.translation} />
+                </>
+              ) : null}
             </p>
           ) : null}
           <p className="mt-3 font-serif text-lg leading-8">{excerpt(prayer.body)}</p>

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { listTopics } from "@/db/queries";
+import { esvApiKey } from "@/lib/esv-api";
 import { getAdminPassword } from "@/lib/password";
 import { firstParam } from "@/lib/params";
 import { isAdmin } from "@/lib/session";
@@ -101,6 +102,7 @@ async function AdminGate() {
         </Button>
       </form>
       <AdminForms
+        esvEnabled={Boolean(esvApiKey())}
         topics={loaded.data.map((topic) => ({ id: topic.id, name: topic.name }))}
       />
     </div>

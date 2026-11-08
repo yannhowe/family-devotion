@@ -1,7 +1,7 @@
 import type { Client } from "@libsql/client";
 import { eq } from "drizzle-orm";
 import { closeDatabase, getDatabase, type Database } from "./client";
-import { migrationSql } from "./migration-sql";
+import { esvCacheSql, migrationSql } from "./migration-sql";
 import { prayerTopics, prayers, topics, verseTopics, verses } from "./schema";
 import { seedPrayers, seedTopics, seedVerses } from "./seed-data";
 
@@ -42,25 +42,32 @@ async function applyMigrations(client: Client) {
     )
   `);
 
-  const applied = await client.execute({
-    sql: "SELECT id FROM schema_migrations WHERE id = ?",
-    args: ["0000_init"],
-  });
-  if (applied.rows.length > 0) return;
+  const migrations = [
+    { id: "0000_init", sql: migrationSql },
+    { id: "0001_esv_cache", sql: esvCacheSql },
+  ];
 
-  const statements = migrationSql
-    .split("--> statement-breakpoint")
-    .map((statement) => statement.trim())
-    .filter(Boolean);
+  for (const migration of migrations) {
+    const applied = await client.execute({
+      sql: "SELECT id FROM schema_migrations WHERE id = ?",
+      args: [migration.id],
+    });
+    if (applied.rows.length > 0) continue;
 
-  for (const statement of statements) {
-    await client.execute(statement);
+    const statements = migration.sql
+      .split("--> statement-breakpoint")
+      .map((statement) => statement.trim())
+      .filter(Boolean);
+
+    for (const statement of statements) {
+      await client.execute(statement);
+    }
+
+    await client.execute({
+      sql: "INSERT OR IGNORE INTO schema_migrations (id, applied_at) VALUES (?, ?)",
+      args: [migration.id, Date.now()],
+    });
   }
-
-  await client.execute({
-    sql: "INSERT OR IGNORE INTO schema_migrations (id, applied_at) VALUES (?, ?)",
-    args: ["0000_init", Date.now()],
-  });
 }
 
 function isUniqueConstraint(error: unknown): boolean {
