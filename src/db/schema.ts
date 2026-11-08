@@ -83,10 +83,19 @@ export const prayerTopics = sqliteTable(
   ],
 );
 
+export const esvCache = sqliteTable("esv_cache", {
+  referenceKey: text("reference_key").primaryKey(),
+  text: text("text").notNull(),
+  verseCount: integer("verse_count").notNull(),
+  bookId: integer("book_id").notNull(),
+  fetchedAt: integer("fetched_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 export const schema = {
   topics,
   verses,
   verseTopics,
   prayers,
   prayerTopics,
+  esvCache,
 };

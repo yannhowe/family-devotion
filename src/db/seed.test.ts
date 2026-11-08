@@ -8,6 +8,7 @@ import { closeDatabase, getDatabase } from "./client";
 import { ensureDatabase, resetDatabaseForTests } from "./ensure";
 import { prayers, topics, verseTopics, verses } from "./schema";
 import { seedPrayers, seedTopics, seedVerses } from "./seed-data";
+import { presentVerses } from "@/lib/present-scripture";
 import { createPrayer, createVerse } from "./writes";
 
 const requiredReferences = [
@@ -105,6 +106,71 @@ test("seed is idempotent and can accept one added prayer", async () => {
       .from(verses)
       .where(eq(verses.reference, "A family note"));
     assert.equal(saved[0]?.translation, "WEB");
+
+    const james = await database
+      .select()
+      .from(verses)
+      .where(eq(verses.reference, "James 1:5"));
+    const webShown = await presentVerses(james);
+    assert.equal(webShown[0]?.translation, "WEB");
+    assert.equal(webShown[0]?.text, james[0]?.text);
+
+    const esvText = "The mock passage returns these exact words.";
+    const previousFetch = globalThis.fetch;
+    const previousEsvKey = process.env.ESV_API_KEY;
+    process.env.ESV_API_KEY = "test-key";
+    let fetches = 0;
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      fetches += 1;
+      const url = new URL(String(input));
+      assert.equal(new URL(url).origin + url.pathname, "https://api.esv.org/v3/passage/text/");
+      if (url.searchParams.get("q") === "John 11:35") {
+        return Response.json({
+          parsed: [[43011035, 43011035]],
+          passages: [`  ${esvText}  `],
+        });
+      }
+      return new Response("no", { status: 503 });
+    }) as typeof fetch;
+
+    try {
+      const before = (await database.select().from(verses)).length;
+      const failed = await createVerse({
+        reference: "John 11:36",
+        text: "",
+        translation: "WEB",
+        topicIds: [love.id],
+        newTopicName: "",
+      });
+      assert.equal(failed.ok, false);
+      assert.equal((await database.select().from(verses)).length, before);
+
+      const addedEsv = await createVerse({
+        reference: "John 11:35",
+        text: "",
+        translation: "WEB",
+        topicIds: [love.id],
+        newTopicName: "",
+      });
+      assert.equal(addedEsv.ok, true);
+      const row = await database
+        .select()
+        .from(verses)
+        .where(eq(verses.reference, "John 11:35"));
+      assert.equal(row[0]?.translation, "ESV");
+      assert.equal(row[0]?.text, esvText);
+      const shown = await presentVerses(row);
+      assert.equal(shown[0]?.text, esvText);
+      assert.equal(shown[0]?.translation, "ESV");
+      const fetchesAfterCreate = fetches;
+      await presentVerses(row);
+      assert.equal(fetches, fetchesAfterCreate);
+      assert.equal(james[0]?.translation, "WEB");
+    } finally {
+      globalThis.fetch = previousFetch;
+      if (previousEsvKey === undefined) delete process.env.ESV_API_KEY;
+      else process.env.ESV_API_KEY = previousEsvKey;
+    }
   } finally {
     closeDatabase();
     resetDatabaseForTests();

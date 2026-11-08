@@ -1,6 +1,7 @@
 const translationNames: Record<string, string> = {
   WEB: "World English Bible",
   KJV: "King James Version",
+  ESV: "ESV",
 };
 
 export function translationName(code: string) {

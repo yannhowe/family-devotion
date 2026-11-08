@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Source_Serif_4 } from "next/font/google";
+import { Suspense } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
@@ -40,7 +41,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main id="content" className="mx-auto w-full max-w-2xl flex-1 px-5 py-10">
           {children}
         </main>
-        <SiteFooter />
+        <Suspense
+          fallback={
+            <footer className="border-t border-border">
+              <div className="mx-auto h-24 w-full max-w-2xl" />
+            </footer>
+          }
+        >
+          <SiteFooter />
+        </Suspense>
       </body>
     </html>
   );

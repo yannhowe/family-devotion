@@ -4,12 +4,10 @@ import { Suspense } from "react";
 import { DatabaseMessage } from "@/components/database-message";
 import { LibraryFallback } from "@/components/library-fallback";
 import { Scripture } from "@/components/scripture";
+import { TranslationLabel } from "@/components/translation-label";
 import { getPrayer } from "@/db/queries";
-import { seedPrayers, TRANSLATION } from "@/db/seed-data";
-import { translationName } from "@/lib/format";
+import { presentPrayers } from "@/lib/present-scripture";
 import { settle } from "@/lib/settle";
-
-const seededReferences = new Set(seedPrayers.map((prayer) => prayer.scriptureReference));
 
 export const metadata = {
   title: "Prayer",
@@ -33,8 +31,9 @@ async function PrayerDetail({ params }: { params: Promise<{ id: string }> }) {
 
   const loaded = await settle(() => getPrayer(Number(id)));
   if (!loaded.ok) return <DatabaseMessage error={loaded.error} />;
-  const prayer = loaded.data;
-  if (!prayer) notFound();
+  const prayerRow = loaded.data;
+  if (!prayerRow) notFound();
+  const prayer = (await presentPrayers([prayerRow]))[0] ?? prayerRow;
 
   return (
     <article className="flex flex-col gap-6">
@@ -56,9 +55,12 @@ async function PrayerDetail({ params }: { params: Promise<{ id: string }> }) {
         {prayer.scriptureReference ? (
           <p className="text-muted-foreground">
             {prayer.scriptureReference}
-            {prayer.scriptureReference && seededReferences.has(prayer.scriptureReference)
-              ? ` · ${translationName(TRANSLATION)}`
-              : null}
+            {prayer.translation ? (
+              <>
+                {" · "}
+                <TranslationLabel translation={prayer.translation} />
+              </>
+            ) : null}
           </p>
         ) : null}
       </header>

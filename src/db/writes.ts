@@ -6,6 +6,8 @@ type Query = Parameters<Parameters<Database["transaction"]>[0]>[0];
 import { prayerTopics, prayers, topics, verseTopics, verses } from "./schema";
 import { normalizeTranslation } from "@/lib/format";
 import { slugify } from "@/lib/slug";
+import { esvApiKey } from "@/lib/esv-api";
+import { rememberEsvReference } from "@/lib/esv-cache";
 
 export type WriteResult =
   | { ok: true; id: number; topicSlug?: string }
@@ -80,8 +82,8 @@ export async function createPrayer(input: PrayerInput): Promise<WriteResult> {
 
 export async function createVerse(input: VerseInput): Promise<WriteResult> {
   const reference = cleanLine(input.reference, 200);
-  const text = cleanText(input.text, 8000);
-  const translation = normalizeTranslation(input.translation || "WEB");
+  let text = cleanText(input.text, 8000);
+  let translation = normalizeTranslation(input.translation || "WEB");
   const newTopicName = cleanLine(input.newTopicName, 80);
 
   if (!reference) {
@@ -89,6 +91,21 @@ export async function createVerse(input: VerseInput): Promise<WriteResult> {
       ok: false,
       error: "A verse needs a reference, such as Philippians 4:6-7.",
     };
+  }
+  if (esvApiKey()) {
+    const loaded = await rememberEsvReference(reference);
+    if (loaded.ok) {
+      text = loaded.passage.text;
+      translation = "ESV";
+    } else if (!text) {
+      return {
+        ok: false,
+        error:
+          loaded.reason === "limited"
+            ? "That passage is too long to store from the ESV. Nothing was saved."
+            : "The ESV text could not be loaded. Nothing was saved.",
+      };
+    }
   }
   if (!text) return { ok: false, error: "A verse needs its text." };
   if (!translation) return { ok: false, error: "Name the translation, such as WEB." };

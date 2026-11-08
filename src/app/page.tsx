@@ -11,7 +11,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { listPrayers, listTopics } from "@/db/queries";
+import { TranslationLabel } from "@/components/translation-label";
 import { excerpt } from "@/lib/format";
+import { presentPrayers } from "@/lib/present-scripture";
 import { settle } from "@/lib/settle";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +57,8 @@ async function HomeLibrary() {
     Promise.all([listPrayers("Paul"), listTopics()]),
   );
   if (!loaded.ok) return <DatabaseMessage error={loaded.error} />;
-  const [prayers, topics] = loaded.data;
+  const [prayerRows, topics] = loaded.data;
+  const prayers = await presentPrayers(prayerRows);
   const featured = prayers.slice(0, 3);
 
   return (
@@ -73,7 +76,15 @@ async function HomeLibrary() {
                       </Link>
                     </h3>
                   </CardTitle>
-                  <CardDescription>{prayer.scriptureReference}</CardDescription>
+                  <CardDescription>
+                    {prayer.scriptureReference}
+                    {prayer.translation ? (
+                      <>
+                        {" · "}
+                        <TranslationLabel translation={prayer.translation} />
+                      </>
+                    ) : null}
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="font-serif text-lg leading-8">{excerpt(prayer.body, 180)}</p>

@@ -4,6 +4,7 @@ import { DatabaseMessage } from "@/components/database-message";
 import { LibraryFallback } from "@/components/library-fallback";
 import { VerseBlock } from "@/components/verse-block";
 import { listTopicsWithVerses } from "@/db/queries";
+import { presentVerses } from "@/lib/present-scripture";
 import { settle } from "@/lib/settle";
 
 export const metadata = {
@@ -22,7 +23,17 @@ export default function VersesPage() {
 async function VerseIndex() {
   const loaded = await settle(() => listTopicsWithVerses());
   if (!loaded.ok) return <DatabaseMessage error={loaded.error} />;
-  const topics = loaded.data;
+  const topicRows = loaded.data;
+  const presented = await presentVerses(topicRows.flatMap((topic) => topic.verses));
+  const topics = topicRows.map((topic, index) => {
+    const start = topicRows
+      .slice(0, index)
+      .reduce((sum, earlier) => sum + earlier.verses.length, 0);
+    return {
+      ...topic,
+      verses: presented.slice(start, start + topic.verses.length),
+    };
+  });
   return (
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-3">
@@ -47,7 +58,7 @@ async function VerseIndex() {
             ) : (
               <div className="divide-y divide-border">
                 {topic.verses.map((verse) => (
-                  <VerseBlock key={verse.id} {...verse} heading="h3" />
+                  <VerseBlock key={verse.id} {...verse} heading="h3" notice={verse.notice} />
                 ))}
               </div>
             )}
