@@ -1,6 +1,12 @@
 import type { Client } from "@libsql/client";
 import { eq } from "drizzle-orm";
-import { closeDatabase, getDatabase, type Database } from "./client";
+import {
+  applyConnectionPragmas,
+  closeDatabase,
+  getDatabase,
+  resolveDatabaseConfig,
+  type Database,
+} from "./client";
 import { esvCacheSql, migrationSql } from "./migration-sql";
 import { prayerTopics, prayers, topics, verseTopics, verses } from "./schema";
 import { seedPrayers, seedTopics, seedVerses } from "./seed-data";
@@ -22,10 +28,10 @@ export function resetDatabaseForTests() {
 }
 
 async function setup() {
+  const { url } = resolveDatabaseConfig();
   const { client, database } = getDatabase();
   try {
-    await client.execute("PRAGMA foreign_keys = ON");
-    await client.execute("PRAGMA busy_timeout = 5000");
+    await applyConnectionPragmas(client, url);
     await applyMigrations(client);
     await seed(database);
   } catch (error) {

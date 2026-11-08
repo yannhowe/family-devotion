@@ -1,10 +1,37 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { resolveDatabaseConfig } from "./client";
+import { applyConnectionPragmas, resolveDatabaseConfig } from "./client";
 import { DatabaseConfigError } from "./errors";
 
 const remoteUrl = "libsql://example.turso.io";
 const plainToken = "plain-token";
+
+test("busy_timeout is only set for a local database", async () => {
+  const statements: string[] = [];
+  const client = {
+    async execute(sql: string) {
+      statements.push(sql);
+    },
+  };
+
+  await applyConnectionPragmas(client, "libsql://example.turso.io");
+  await applyConnectionPragmas(client, "https://example.turso.io");
+  await applyConnectionPragmas(client, "http://127.0.0.1:8080");
+  await applyConnectionPragmas(client, "wss://example.turso.io");
+  assert.deepEqual(statements, [
+    "PRAGMA foreign_keys = ON",
+    "PRAGMA foreign_keys = ON",
+    "PRAGMA foreign_keys = ON",
+    "PRAGMA foreign_keys = ON",
+  ]);
+
+  statements.length = 0;
+  await applyConnectionPragmas(client, "file:./data/devotion.db");
+  assert.deepEqual(statements, [
+    "PRAGMA foreign_keys = ON",
+    "PRAGMA busy_timeout = 5000",
+  ]);
+});
 
 test("TURSO_AUTH_TOKEN unwraps to the token sent to a remote database", () => {
   const previous = {

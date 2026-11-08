@@ -68,8 +68,18 @@ export function closeDatabase() {
   openUrl = null;
 }
 
-function isRemoteUrl(url: string) {
+export function isRemoteUrl(url: string) {
   return /^(libsql|https?|wss?):/i.test(url);
+}
+
+export async function applyConnectionPragmas(
+  client: { execute: (sql: string) => Promise<unknown> },
+  url: string,
+) {
+  await client.execute("PRAGMA foreign_keys = ON");
+  if (!isRemoteUrl(url)) {
+    await client.execute("PRAGMA busy_timeout = 5000");
+  }
 }
 
 function ensureSqliteDirectory(url: string) {
