@@ -44,6 +44,10 @@ CREATE TABLE IF NOT EXISTS prayer_topics (
 );
 `;
 
+export const vestaboardTextSql = `
+ALTER TABLE verses ADD COLUMN vestaboard_text TEXT;
+`;
+
 export const esvCacheSql = `
 CREATE TABLE IF NOT EXISTS esv_cache (
   reference_key TEXT PRIMARY KEY,

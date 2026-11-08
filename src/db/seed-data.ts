@@ -43,6 +43,11 @@ export const seedTopics: SeedTopic[] = [
     "slug": "thanksgiving",
     "name": "Thanksgiving",
     "description": "Giving thanks to God in everything."
+  },
+  {
+    "slug": "vestaboard",
+    "name": "Vestaboard",
+    "description": "Short passages chosen to appear on the family Vestaboard."
   }
 ];
 
@@ -282,3 +287,31 @@ export const seedVerses: SeedVerse[] = [
     "text": "And let the peace of God rule in your hearts, to which also you were called in one body; and be thankful. Let the word of Christ dwell in you richly; in all wisdom teaching and admonishing one another with psalms, hymns, and spiritual songs, singing with grace in your heart to the Lord. Whatever you do, in word or in deed, do all in the name of the Lord Jesus, giving thanks to God the Father, through him."
   }
 ];
+
+export const seedVestaboardText: Record<string, string> = {
+  "Philippians 4:6-7":
+    "In nothing be anxious, but in everything, by prayer and petition with thanksgiving, let your requests be made known to God.",
+  "Matthew 6:9-13":
+    "Our Father in heaven, may your name be kept holy. Let your Kingdom come. Let your will be done, as in heaven, so on earth.",
+  "1 John 5:14-15": "if we ask anything according to his will, he listens to us.",
+  "Jeremiah 29:12-13":
+    "You shall call on me, and you shall go and pray to me, and I will listen to you.",
+  "1 Thessalonians 5:16-18":
+    "Rejoice always. Pray without ceasing. In everything give thanks, for this is the will of God in Christ Jesus toward you.",
+  "1 Corinthians 13:4-7": "Love is patient and is kind; love doesn’t envy. Love doesn’t brag, is not proud,",
+  "John 13:34-35":
+    "that you love one another. Just as I have loved you, you also love one another.",
+  "1 John 4:7-8": "let us love one another, for love is of God",
+  "Colossians 3:14": "Above all these things, walk in love, which is the bond of perfection.",
+  "James 1:5":
+    "if any of you lacks wisdom, let him ask of God, who gives to all liberally and without reproach",
+  "Proverbs 3:5-6": "Trust in Yahweh with all your heart, and don’t lean on your own understanding.",
+  "Proverbs 2:6": "For Yahweh gives wisdom. Out of his mouth comes knowledge and understanding.",
+  "James 3:17":
+    "the wisdom that is from above is first pure, then peaceful, gentle, reasonable, full of mercy and good fruits",
+  "Psalm 100:4-5":
+    "Enter into his gates with thanksgiving, into his courts with praise. Give thanks to him, and bless his name.",
+  "Psalm 107:1": "Give thanks to Yahweh, for he is good, for his loving kindness endures forever.",
+  "Colossians 3:15-17":
+    "let the peace of God rule in your hearts, to which also you were called in one body; and be thankful.",
+};

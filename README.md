@@ -64,3 +64,29 @@ Run `docker compose up --build` again, then open `/admin`. `.env.example` lists 
 - Browse verses by topic: Prayer, Love, Wisdom, and Thanksgiving.
 - Search from the box at the top of the page.
 - Add a prayer or a verse at `/admin` when `ADMIN_PASSWORD` is set.
+- Read one Vestaboard-ready verse from `GET /api/vestaboard`.
+
+## Vestaboard
+
+`GET /api/vestaboard` returns one verse that is tagged Vestaboard. No Vestaboard key is required. A board or script can POST `text` or `characters` unchanged to Vestaboard’s write API.
+
+- No query: a random verse tagged Vestaboard.
+- `?topic=thanksgiving`: a random Vestaboard verse that also has that topic.
+- `?reference=Psalm%20107:1`: that verse, if it is tagged Vestaboard.
+- `?size=note`: a 3 by 15 Note layout. The default is the flagship board, 6 rows by 22 columns.
+
+Until a verse is tagged Vestaboard, the response is `404` with `{ "error": "No verses are tagged for the Vestaboard." }`. If the short version column is empty, the response fits an excerpt of the verse. When an ESV key is set, the board text is an excerpt of the ESV and includes `ESV`.
+
+```json
+{
+  "reference": "Psalm 107:1",
+  "translation": "WEB",
+  "topics": ["thanksgiving", "vestaboard"],
+  "text": "PSALM 107:1\nGIVE THANKS TO YAHWEH,\nFOR HE IS GOOD, FOR HIS\nLOVING KINDNESS\nENDURES FOREVER.",
+  "characters": [
+    [16, 19, 1, 12, 13, 0, 27, 36, 33, 50, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  ]
+}
+```
+
+`characters` is six rows of 22 Vestaboard character codes. The sample above shows only the first row.
