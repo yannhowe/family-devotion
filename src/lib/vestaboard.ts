@@ -116,8 +116,82 @@ export function formatVestaboard(input: {
   };
 }
 
+const BOOK_ABBREVIATIONS: [string, string][] = [
+  ["1 Thessalonians", "1 Thess"],
+  ["2 Thessalonians", "2 Thess"],
+  ["1 Corinthians", "1 Cor"],
+  ["2 Corinthians", "2 Cor"],
+  ["1 Chronicles", "1 Chr"],
+  ["2 Chronicles", "2 Chr"],
+  ["Song of Solomon", "Song"],
+  ["Song of Songs", "Song"],
+  ["1 Timothy", "1 Tim"],
+  ["2 Timothy", "2 Tim"],
+  ["Ecclesiastes", "Eccl"],
+  ["Lamentations", "Lam"],
+  ["Deuteronomy", "Deut"],
+  ["Philippians", "Phil"],
+  ["Colossians", "Col"],
+  ["Zephaniah", "Zeph"],
+  ["Zechariah", "Zech"],
+  ["Habakkuk", "Hab"],
+  ["1 Samuel", "1 Sam"],
+  ["2 Samuel", "2 Sam"],
+  ["1 Kings", "1 Kgs"],
+  ["2 Kings", "2 Kgs"],
+  ["1 Peter", "1 Pet"],
+  ["2 Peter", "2 Pet"],
+  ["1 John", "1 John"],
+  ["2 John", "2 John"],
+  ["3 John", "3 John"],
+  ["Revelation", "Rev"],
+  ["Leviticus", "Lev"],
+  ["Nehemiah", "Neh"],
+  ["Ephesians", "Eph"],
+  ["Galatians", "Gal"],
+  ["Philemon", "Phlm"],
+  ["Ezekiel", "Ezek"],
+  ["Obadiah", "Obad"],
+  ["Malachi", "Mal"],
+  ["Matthew", "Matt"],
+  ["Proverbs", "Prov"],
+  ["Genesis", "Gen"],
+  ["Exodus", "Exod"],
+  ["Numbers", "Num"],
+  ["Esther", "Esth"],
+  ["Isaiah", "Isa"],
+  ["Jeremiah", "Jer"],
+  ["Daniel", "Dan"],
+  ["Hosea", "Hos"],
+  ["Joshua", "Josh"],
+  ["Judges", "Judg"],
+  ["Psalms", "Ps"],
+  ["Psalm", "Ps"],
+  ["Micah", "Mic"],
+  ["Nahum", "Nah"],
+  ["Haggai", "Hag"],
+  ["Romans", "Rom"],
+  ["Hebrews", "Heb"],
+  ["James", "Jas"],
+];
+
+export function abbreviateBookName(reference: string) {
+  const trimmed = reference.trim();
+  const lower = trimmed.toLowerCase();
+  const books = [...BOOK_ABBREVIATIONS].sort((left, right) => right[0].length - left[0].length);
+  for (const [name, abbreviation] of books) {
+    const key = name.toLowerCase();
+    if (lower === key) return abbreviation;
+    if (lower.startsWith(`${key} `)) return `${abbreviation}${trimmed.slice(name.length)}`;
+  }
+  return trimmed;
+}
+
 function plain(reference: string, translation: string) {
-  const ref = normalizeBoardText(reference).replace(/\n/g, " ").replace(/ +/g, " ").trim();
+  const ref = normalizeBoardText(abbreviateBookName(reference))
+    .replace(/\n/g, " ")
+    .replace(/ +/g, " ")
+    .trim();
   if (translation.trim().toUpperCase() === "ESV") return `${ref} ESV`.trim();
   return ref;
 }

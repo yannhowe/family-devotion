@@ -115,7 +115,7 @@ test("the Vestaboard API chooses only tagged verses", async () => {
       assert.equal(subset.ok, true);
       if (subset.ok) {
         assert.equal(subset.message.reference, "Jeremiah 29:11");
-        assert.match(subset.message.text, /JEREMIAH 29:11/);
+        assert.equal(subset.message.text.split("\n")[0], "JER 29:11");
         assert.doesNotMatch(subset.message.text, /29:10-14/);
         assert.match(subset.message.text, /FOR I KNOW THE PLANS/);
         assert.match(subset.message.text, /HAVE FOR YOU/);

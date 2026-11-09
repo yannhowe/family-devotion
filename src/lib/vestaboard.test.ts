@@ -23,9 +23,37 @@ test("a flagship message is always 6 by 22 valid character codes", () => {
   assert.ok(layout.characters.flat().every((code) => VALID_VESTABOARD_CODES.has(code)));
   assert.ok(layout.text.split("\n").length <= FLAGSHIP_ROWS);
   assert.ok(layout.text.split("\n").every((line) => line.length <= FLAGSHIP_COLUMNS));
-  assert.match(layout.text, /PSALM 107:1/);
+  assert.match(layout.text, /PS 107:1/);
   assert.doesNotMatch(layout.text, /ESV/);
   assert.equal(layout.characters[0]?.[0], 16);
+});
+
+test("long book names are abbreviated so the header fits one line", () => {
+  const thessalonians = formatVestaboard({
+    reference: "1 Thessalonians 4:3",
+    body: "For this is the will of God, your sanctification.",
+    translation: "ESV",
+  });
+  const thessaloniansHeader = thessalonians.text.split("\n")[0] ?? "";
+  assert.equal(thessaloniansHeader, "1 THESS 4:3 ESV");
+  assert.ok(thessaloniansHeader.length <= FLAGSHIP_COLUMNS);
+  assert.match(thessalonians.text.split("\n")[1] ?? "", /FOR THIS IS THE WILL/);
+
+  const corinthians = formatVestaboard({
+    reference: "1 Corinthians 15:20-22",
+    body: "Christ has been raised from the dead.",
+    translation: "ESV",
+  });
+  const corinthiansHeader = corinthians.text.split("\n")[0] ?? "";
+  assert.equal(corinthiansHeader, "1 COR 15:20-22 ESV");
+  assert.ok(corinthiansHeader.length <= FLAGSHIP_COLUMNS);
+
+  const john = formatVestaboard({
+    reference: "John 3:16",
+    body: "For God so loved the world.",
+    translation: "WEB",
+  });
+  assert.equal(john.text.split("\n")[0], "JOHN 3:16");
 });
 
 test("unsupported characters are replaced or dropped and the board does not overflow", () => {

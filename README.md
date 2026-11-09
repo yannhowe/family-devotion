@@ -82,9 +82,9 @@ Until a verse is tagged Vestaboard, the response is `404` with `{ "error": "No v
   "reference": "Psalm 107:1",
   "translation": "WEB",
   "topics": ["thanksgiving", "vestaboard"],
-  "text": "PSALM 107:1\nGIVE THANKS TO YAHWEH,\nFOR HE IS GOOD, FOR HIS\nLOVING KINDNESS\nENDURES FOREVER.",
+  "text": "PS 107:1\nGIVE THANKS TO YAHWEH,\nFOR HE IS GOOD, FOR HIS\nLOVING KINDNESS\nENDURES FOREVER.",
   "characters": [
-    [16, 19, 1, 12, 13, 0, 27, 36, 33, 50, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [16, 19, 0, 27, 36, 33, 50, 27, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   ]
 }
 ```
