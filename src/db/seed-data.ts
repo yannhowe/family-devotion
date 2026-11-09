@@ -315,3 +315,16 @@ export const seedVestaboardText: Record<string, string> = {
   "Colossians 3:15-17":
     "let the peace of God rule in your hearts, to which also you were called in one body; and be thankful.",
 };
+
+export const seedVestaboardReference: Record<string, string> = {
+  "Philippians 4:6-7": "Philippians 4:6",
+  "Matthew 6:9-13": "Matthew 6:9-10",
+  "1 John 5:14-15": "1 John 5:14",
+  "Jeremiah 29:12-13": "Jeremiah 29:12",
+  "1 Corinthians 13:4-7": "1 Corinthians 13:4",
+  "John 13:34-35": "John 13:34",
+  "1 John 4:7-8": "1 John 4:7",
+  "Proverbs 3:5-6": "Proverbs 3:5",
+  "Psalm 100:4-5": "Psalm 100:4",
+  "Colossians 3:15-17": "Colossians 3:15",
+};

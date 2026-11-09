@@ -48,6 +48,7 @@ export async function addVerse(
     topicIds: topicIds(formData),
     newTopicName: String(formData.get("newTopicName") ?? ""),
     vestaboardText: String(formData.get("vestaboardText") ?? ""),
+    vestaboardReference: String(formData.get("vestaboardReference") ?? ""),
   });
   if (!result.ok) return { error: result.error };
   redirect(result.topicSlug ? `/verses/${result.topicSlug}` : "/verses");
