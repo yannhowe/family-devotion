@@ -82,10 +82,17 @@ function VerseForm({
       <TextField id="verse-text" label="Text" name="text" required={!esvEnabled} />
       <Field id="verse-translation" label="Translation" name="translation" required defaultValue="WEB" />
       <TextField id="verse-vestaboard" label="Vestaboard short version" name="vestaboardText" />
+      <Field
+        id="verse-vestaboard-reference"
+        label="Vestaboard reference"
+        name="vestaboardReference"
+        placeholder="Jeremiah 29:11"
+      />
       <p className="text-sm leading-6 text-muted-foreground">
-        Optional. Paste a short contiguous excerpt of this verse for a 6 by 22
-        Vestaboard. Tick Vestaboard under topics to let the board show it. If you
-        leave the short version empty, the board fits an excerpt of the verse.
+        Optional. Paste a short contiguous excerpt for a 6 by 22 Vestaboard, and
+        the reference for that excerpt when it is only part of the passage.
+        Tick Vestaboard under topics to let the board show it. If you leave the
+        short version empty, the board fits an excerpt of the whole passage.
       </p>
       <TopicFields idPrefix="verse" topics={topics} />
       {state.error ? <p role="alert" className="text-sm text-destructive">{state.error}</p> : null}

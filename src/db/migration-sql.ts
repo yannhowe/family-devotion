@@ -48,6 +48,10 @@ export const vestaboardTextSql = `
 ALTER TABLE verses ADD COLUMN vestaboard_text TEXT;
 `;
 
+export const vestaboardReferenceSql = `
+ALTER TABLE verses ADD COLUMN IF NOT EXISTS vestaboard_reference TEXT;
+`;
+
 export const esvCacheSql = `
 CREATE TABLE IF NOT EXISTS esv_cache (
   reference_key TEXT PRIMARY KEY,

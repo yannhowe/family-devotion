@@ -7,9 +7,15 @@ import {
   resolveDatabaseConfig,
   type Database,
 } from "./client";
-import { esvCacheSql, migrationSql, vestaboardTextSql } from "./migration-sql";
+import { esvCacheSql, migrationSql, vestaboardReferenceSql, vestaboardTextSql } from "./migration-sql";
 import { prayerTopics, prayers, topics, verseTopics, verses } from "./schema";
-import { seedPrayers, seedTopics, seedVerses, seedVestaboardText } from "./seed-data";
+import {
+  seedPrayers,
+  seedTopics,
+  seedVerses,
+  seedVestaboardReference,
+  seedVestaboardText,
+} from "./seed-data";
 
 let ready: Promise<void> | null = null;
 
@@ -52,6 +58,7 @@ async function applyMigrations(client: Client) {
     { id: "0000_init", sql: migrationSql },
     { id: "0001_esv_cache", sql: esvCacheSql },
     { id: "0002_vestaboard_text", sql: vestaboardTextSql },
+    { id: "0003_vestaboard_reference", sql: vestaboardReferenceSql },
   ];
 
   for (const migration of migrations) {
@@ -67,7 +74,7 @@ async function applyMigrations(client: Client) {
       .filter(Boolean);
 
     for (const statement of statements) {
-      await client.execute(statement);
+      await executeIdempotentStatement(client, statement);
     }
 
     await client.execute({
@@ -75,6 +82,34 @@ async function applyMigrations(client: Client) {
       args: [migration.id, Date.now()],
     });
   }
+}
+
+async function executeIdempotentStatement(client: Client, statement: string) {
+  try {
+    await client.execute(statement);
+  } catch (error) {
+    if (isDuplicateColumn(error)) return;
+    if (!/ADD COLUMN IF NOT EXISTS/i.test(statement) || !isSyntaxError(error)) throw error;
+    const withoutGuard = statement.replace(/IF NOT EXISTS\s+/i, "");
+    try {
+      await client.execute(withoutGuard);
+    } catch (retryError) {
+      if (isDuplicateColumn(retryError)) return;
+      throw retryError;
+    }
+  }
+}
+
+function isDuplicateColumn(error: unknown) {
+  return errorMessage(error).toLowerCase().includes("duplicate column");
+}
+
+function isSyntaxError(error: unknown) {
+  return /syntax error/i.test(errorMessage(error));
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "";
 }
 
 function isUniqueConstraint(error: unknown): boolean {
@@ -138,6 +173,19 @@ async function seed(database: Database) {
           eq(verses.reference, reference),
           eq(verses.translation, "WEB"),
           isNull(verses.vestaboardText),
+        ),
+      );
+  }
+
+  for (const [reference, vestaboardReference] of Object.entries(seedVestaboardReference)) {
+    await database
+      .update(verses)
+      .set({ vestaboardReference })
+      .where(
+        and(
+          eq(verses.reference, reference),
+          eq(verses.translation, "WEB"),
+          isNull(verses.vestaboardReference),
         ),
       );
   }

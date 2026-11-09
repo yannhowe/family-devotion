@@ -65,8 +65,13 @@ export async function pickVestaboardMessage(
     .from(verses)
     .where(inArray(verses.id, ids))
     .orderBy(asc(verses.id));
-  const matches = reference
-    ? rows.filter((row) => row.reference.trim().toLowerCase() === reference.toLowerCase())
+  const wanted = reference?.toLowerCase();
+  const matches = wanted
+    ? rows.filter((row) => {
+        const passage = row.reference.trim().toLowerCase();
+        const excerpt = row.vestaboardReference?.trim().toLowerCase();
+        return passage === wanted || excerpt === wanted;
+      })
     : rows;
   if (matches.length === 0) {
     return { ok: false, error: "That reference is not tagged for the Vestaboard." };
@@ -84,25 +89,34 @@ export async function pickVestaboardMessage(
     .where(eq(verseTopics.verseId, verse.id))
     .orderBy(asc(topics.slug));
 
-  const [shown] = await presentScripture([
-    {
-      reference: verse.reference,
-      text: verse.text,
-      translation: verse.translation,
-      quotable: true,
-    },
-  ]);
-  const fromEsv = shown?.fromEsv === true && Boolean(shown.text.trim());
-  const curated = verse.vestaboardText?.trim() ?? "";
-  const body = fromEsv && shown ? shown.text : curated || verse.text;
-  const translation = fromEsv ? "ESV" : verse.translation;
+  const curatedText = verse.vestaboardText?.trim() ?? "";
+  const curatedReference = verse.vestaboardReference?.trim() ?? "";
+  let body = curatedText;
+  let translation = verse.translation;
+  let citation = curatedReference || verse.reference;
+
+  if (!curatedText) {
+    const [shown] = await presentScripture([
+      {
+        reference: verse.reference,
+        text: verse.text,
+        translation: verse.translation,
+        quotable: true,
+      },
+    ]);
+    const fromEsv = shown?.fromEsv === true && Boolean(shown.text.trim());
+    body = fromEsv && shown ? shown.text : verse.text;
+    translation = fromEsv ? "ESV" : verse.translation;
+    citation = verse.reference;
+  }
+
   if (!body.trim()) {
     return { ok: false, error: "The passage could not be loaded." };
   }
 
   const { rows: boardRows, columns } = boardSize(input.size);
   const layout = formatVestaboard({
-    reference: verse.reference,
+    reference: citation,
     body,
     translation,
     rows: boardRows,
@@ -112,7 +126,7 @@ export async function pickVestaboardMessage(
   return {
     ok: true,
     message: {
-      reference: verse.reference,
+      reference: citation,
       translation,
       topics: topicRows.map((row) => row.slug),
       text: layout.text,

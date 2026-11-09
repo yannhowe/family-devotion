@@ -33,6 +33,11 @@ test("the Vestaboard API chooses only tagged verses", async () => {
     if (!none.ok) assert.match(none.error, /tagged for the Vestaboard/);
 
     await ensureDatabase();
+    await getDatabase().client.execute(
+      "DELETE FROM schema_migrations WHERE id = '0003_vestaboard_reference'",
+    );
+    resetDatabaseForTests();
+    await ensureDatabase();
     const database = getDatabase().database;
     const [boardTopic] = await database
       .select()
@@ -78,6 +83,56 @@ test("the Vestaboard API chooses only tagged verses", async () => {
     });
     assert.equal(byReference.ok, true);
     if (byReference.ok) assert.equal(byReference.message.reference, "Psalm 107:1");
+
+    const inserted = await database
+      .insert(verses)
+      .values({
+        reference: "Jeremiah 29:10-14",
+        text: "Longer passage around the promise. For I know the plans I have for you, and the verses that follow it.",
+        translation: "WEB",
+        vestaboardText: "For I know the plans I have for you.",
+        vestaboardReference: "Jeremiah 29:11",
+        createdAt: new Date(),
+      })
+      .returning({ id: verses.id });
+    const rangeId = inserted[0]?.id;
+    assert.ok(rangeId);
+    await database.insert(verseTopics).values({ verseId: rangeId, topicId: boardTopic.id });
+
+    const previousFetch = globalThis.fetch;
+    process.env.ESV_API_KEY = "dummy-token";
+    globalThis.fetch = (async () =>
+      Response.json({
+        parsed: [[24029011, 24029011]],
+        passages: ["COMPLETELY DIFFERENT ESV WORDING FOR THE WHOLE PASSAGE"],
+      })) as typeof fetch;
+
+    try {
+      const subset = await pickVestaboardMessage({
+        reference: "Jeremiah 29:10-14",
+        random: () => 0,
+      });
+      assert.equal(subset.ok, true);
+      if (subset.ok) {
+        assert.equal(subset.message.reference, "Jeremiah 29:11");
+        assert.match(subset.message.text, /JEREMIAH 29:11/);
+        assert.doesNotMatch(subset.message.text, /29:10-14/);
+        assert.match(subset.message.text, /FOR I KNOW THE PLANS/);
+        assert.match(subset.message.text, /HAVE FOR YOU/);
+        assert.doesNotMatch(subset.message.text, /LONGER PASSAGE/);
+        assert.doesNotMatch(subset.message.text, /COMPLETELY DIFFERENT/);
+      }
+
+      const byExcerpt = await pickVestaboardMessage({
+        reference: "Jeremiah 29:11",
+        random: () => 0,
+      });
+      assert.equal(byExcerpt.ok, true);
+      if (byExcerpt.ok) assert.equal(byExcerpt.message.reference, "Jeremiah 29:11");
+    } finally {
+      globalThis.fetch = previousFetch;
+      delete process.env.ESV_API_KEY;
+    }
   } finally {
     closeDatabase();
     resetDatabaseForTests();

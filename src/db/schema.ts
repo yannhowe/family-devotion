@@ -22,6 +22,7 @@ export const verses = sqliteTable(
     text: text("text").notNull(),
     translation: text("translation").notNull(),
     vestaboardText: text("vestaboard_text"),
+    vestaboardReference: text("vestaboard_reference"),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .$defaultFn(() => new Date()),

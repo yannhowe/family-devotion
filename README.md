@@ -75,7 +75,7 @@ Run `docker compose up --build` again, then open `/admin`. `.env.example` lists 
 - `?reference=Psalm%20107:1`: that verse, if it is tagged Vestaboard.
 - `?size=note`: a 3 by 15 Note layout. The default is the flagship board, 6 rows by 22 columns.
 
-Until a verse is tagged Vestaboard, the response is `404` with `{ "error": "No verses are tagged for the Vestaboard." }`. If the short version column is empty, the response fits an excerpt of the verse. When an ESV key is set, the board text is an excerpt of the ESV and includes `ESV`.
+Until a verse is tagged Vestaboard, the response is `404` with `{ "error": "No verses are tagged for the Vestaboard." }`. If the short version is saved, that excerpt is the board text and `vestaboard_reference` is the citation when it is set. If the short version is empty, the response fits an excerpt of the passage. When an ESV key is set and no short version is saved, the board text is an excerpt of the ESV and includes `ESV`.
 
 ```json
 {
